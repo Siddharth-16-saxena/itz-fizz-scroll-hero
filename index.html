@@ -121,6 +121,13 @@
       object-fit: cover;
       mix-blend-mode: screen;
       filter: saturate(1.08) contrast(1.06);
+      clip-path: polygon(
+        47% 14%, 54% 14%, 61% 16%, 67% 20%, 70% 25%, 71% 33%,
+        75% 39%, 73% 46%, 70% 50%, 70% 66%, 72% 72%, 70% 82%,
+        66% 87%, 59% 90%, 51% 91%, 43% 90%, 36% 87%, 31% 82%,
+        29% 72%, 31% 65%, 30% 50%, 27% 46%, 25% 39%, 29% 33%,
+        30% 25%, 33% 20%, 39% 16%
+      );
       -webkit-user-drag: none;
       user-select: none;
     }
@@ -154,14 +161,14 @@
       .edition { font-size: 9px; }
       .headline { top: 17%; padding-inline: 6px; font-size: clamp(16px, 4.6vw, 26px); letter-spacing: .19em; text-indent: .19em; }
       .subhead { top: calc(17% + 38px); font-size: 8px; letter-spacing: .1em; }
-      .road { top: 49%; height: 190px; }
+      .road { top: 49%; height: 110px; }
       .car-wrap { width: clamp(210px, 47vh, 310px); }
-      .metrics { right: 20px; bottom: 10%; left: 20px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .metric { min-height: 76px; padding-top: 13px; }
+      .metrics { right: 20px; bottom: 2%; left: 20px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metric { min-height: 56px; padding-top: 8px; }
       .metric:nth-child(3) { padding-left: 0; border-left: 0; border-top: 1px solid rgba(32,32,30,.18); }
       .metric:nth-child(4) { border-top: 1px solid rgba(32,32,30,.18); }
-      .metric-value { font-size: 29px; }
-      .metric-label { margin-top: 6px; font-size: 9px; }
+      .metric-value { font-size: 25px; }
+      .metric-label { margin-top: 4px; font-size: 9px; }
       .footer-note, .scroll-cue { font-size: 9px; }
       .chapter { min-height: 54svh; padding-inline: 24px; }
     }
