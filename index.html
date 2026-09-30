@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#e8e8e5">
+  <meta name="description" content="A scroll-driven car animation for Itz Fizz.">
+  <title>Itz Fizz | Keep moving</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://images.unsplash.com">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js" defer></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #e8e8e5;
+      --ink: #20201e;
+      --muted: #73736e;
+      --road: #333432;
+      --orange: #f27630;
+      --mono: "DM Mono", monospace;
+      --sans: "Manrope", sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { background: var(--paper); }
+    body { margin: 0; color: var(--ink); background: var(--paper); font-family: var(--sans); }
+    a { color: inherit; }
+    .scroll-track { position: relative; height: 260svh; }
+    .scene {
+      position: sticky;
+      top: 0;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      height: 100svh;
+      min-height: 620px;
+      overflow: hidden;
+      isolation: isolate;
+      background: var(--paper);
+    }
+    .topbar, .footer {
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-inline: clamp(22px, 5vw, 76px);
+    }
+    .topbar { padding-top: clamp(22px, 4vh, 40px); }
+    .wordmark { font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .edition, .scroll-cue, .footer-note { font: 11px var(--mono); letter-spacing: .04em; color: var(--muted); }
+    .edition { display: flex; align-items: center; gap: 9px; }
+    .edition::before { width: 7px; height: 7px; border-radius: 50%; background: var(--orange); content: ""; }
+    .stage { position: relative; display: grid; place-items: center; min-height: 0; }
+    .headline {
+      position: absolute;
+      z-index: 1;
+      top: 14%;
+      width: 100%;
+      margin: 0;
+      padding-inline: 16px;
+      text-align: center;
+      font-size: clamp(19px, 4.1vw, 57px);
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: .35em;
+      text-indent: .35em;
+      white-space: nowrap;
+    }
+    .headline span { display: inline-block; }
+    .headline .space { width: .55em; }
+    .subhead {
+      position: absolute;
+      z-index: 1;
+      top: calc(14% + clamp(38px, 7vw, 78px));
+      margin: 0;
+      color: var(--muted);
+      font: 10px var(--mono);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    .road {
+      position: absolute;
+      top: 48%;
+      left: 0;
+      width: 100%;
+      height: clamp(150px, 24vh, 230px);
+      overflow: hidden;
+      transform: translateY(-50%);
+      background: var(--road);
+    }
+    .road::before, .road::after { position: absolute; left: 0; width: 100%; height: 1px; background: rgba(255,255,255,.14); content: ""; }
+    .road::before { top: 14px; }
+    .road::after { bottom: 14px; }
+    .road-line {
+      position: absolute;
+      top: 50%;
+      left: -4%;
+      width: 108%;
+      height: 2px;
+      transform: translateY(-50%);
+      background: repeating-linear-gradient(90deg, rgba(239,239,231,.7) 0 40px, transparent 40px 76px);
+      opacity: .76;
+    }
+    .car-wrap {
+      position: absolute;
+      z-index: 2;
+      top: 50%;
+      left: 50%;
+      width: clamp(220px, 44vh, 420px);
+      aspect-ratio: 1500 / 2246;
+      transform: translate(-50%, -50%) rotate(90deg);
+      transform-origin: center;
+      will-change: transform;
+    }
+    .car {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      mix-blend-mode: screen;
+      filter: saturate(1.08) contrast(1.06);
+      -webkit-user-drag: none;
+      user-select: none;
+    }
+    .metrics {
+      position: absolute;
+      z-index: 3;
+      right: clamp(22px, 7vw, 104px);
+      bottom: 8%;
+      left: clamp(22px, 7vw, 104px);
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-top: 1px solid rgba(32,32,30,.22);
+    }
+    .metric { min-height: 104px; padding: 18px 14px 0 0; }
+    .metric + .metric { padding-left: clamp(14px, 2.4vw, 34px); border-left: 1px solid rgba(32,32,30,.18); }
+    .metric-value { display: block; font-size: clamp(25px, 3.6vw, 46px); font-weight: 600; line-height: 1; letter-spacing: -.03em; }
+    .metric-label { display: block; max-width: 190px; margin-top: 10px; color: var(--muted); font-size: clamp(10px, 1vw, 12px); line-height: 1.5; }
+    .footer { padding-bottom: clamp(20px, 3.5vh, 34px); }
+    .scroll-cue { display: flex; align-items: center; gap: 10px; }
+    .scroll-cue::after { width: 34px; height: 1px; background: var(--ink); content: ""; }
+    .chapter { display: grid; min-height: 58svh; align-content: center; padding: 90px clamp(24px, 12vw, 180px); color: var(--paper); background: #252624; }
+    .chapter-kicker { margin: 0 0 24px; color: #f38a50; font: 11px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+    .chapter h2 { max-width: 760px; margin: 0; font-size: clamp(34px, 6vw, 76px); font-weight: 600; line-height: 1.02; letter-spacing: -.04em; }
+    .chapter p:last-child { max-width: 440px; margin: 24px 0 0; color: rgba(232,232,229,.66); font-size: 15px; line-height: 1.8; }
+    .js-ready .headline span, .js-ready .subhead, .js-ready .metric { opacity: 0; }
+
+    @media (max-width: 640px) {
+      .scene { min-height: 580px; }
+      .topbar, .footer { padding-inline: 20px; }
+      .wordmark { font-size: 11px; }
+      .edition { font-size: 9px; }
+      .headline { top: 17%; padding-inline: 6px; font-size: clamp(16px, 4.6vw, 26px); letter-spacing: .19em; text-indent: .19em; }
+      .subhead { top: calc(17% + 38px); font-size: 8px; letter-spacing: .1em; }
+      .road { top: 49%; height: 190px; }
+      .car-wrap { width: clamp(210px, 47vh, 310px); }
+      .metrics { right: 20px; bottom: 10%; left: 20px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .metric { min-height: 76px; padding-top: 13px; }
+      .metric:nth-child(3) { padding-left: 0; border-left: 0; border-top: 1px solid rgba(32,32,30,.18); }
+      .metric:nth-child(4) { border-top: 1px solid rgba(32,32,30,.18); }
+      .metric-value { font-size: 29px; }
+      .metric-label { margin-top: 6px; font-size: 9px; }
+      .footer-note, .scroll-cue { font-size: 9px; }
+      .chapter { min-height: 54svh; padding-inline: 24px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="scroll-track" id="journey">
+      <section class="scene" aria-label="Itz Fizz scroll-driven hero">
+        <header class="topbar">
+          <a class="wordmark" href="#journey" aria-label="Itz Fizz home">ITZ FIZZ<span aria-hidden="true">®</span></a>
+          <span class="edition">A little more forward</span>
+        </header>
+        <div class="stage">
+          <h1 class="headline" aria-label="Welcome Itz Fizz">
+            <span>W</span><span>E</span><span>L</span><span>C</span><span>O</span><span>M</span><span>E</span><span class="space" aria-hidden="true"></span><span>I</span><span>T</span><span>Z</span><span class="space" aria-hidden="true"></span><span>F</span><span>I</span><span>Z</span><span>Z</span>
+          </h1>
+          <p class="subhead">Good things move people</p>
+          <div class="road" aria-hidden="true"><div class="road-line"></div></div>
+          <div class="car-wrap" aria-hidden="true">
+            <img class="car" src="https://images.unsplash.com/photo-1739131642757-e44ae0063cb2?auto=format&amp;fit=crop&amp;fm=jpg&amp;q=80&amp;w=1500" alt="" fetchpriority="high" draggable="false">
+          </div>
+          <div class="metrics" aria-label="Impact statistics">
+            <div class="metric"><strong class="metric-value">58%</strong><span class="metric-label">Increase in pick up point use</span></div>
+            <div class="metric"><strong class="metric-value">23%</strong><span class="metric-label">Decreased in customer phone calls</span></div>
+            <div class="metric"><strong class="metric-value">27%</strong><span class="metric-label">Increase in pick up point use</span></div>
+            <div class="metric"><strong class="metric-value">40%</strong><span class="metric-label">Decreased in customer phone calls</span></div>
+          </div>
+        </div>
+        <footer class="footer">
+          <span class="footer-note">Designed to keep good things moving.</span>
+          <span class="scroll-cue">Scroll to move</span>
+        </footer>
+      </section>
+    </div>
+    <section class="chapter" aria-labelledby="chapter-title">
+      <p class="chapter-kicker">The road is yours</p>
+      <h2 id="chapter-title">Make every little moment go further.</h2>
+      <p>One small move can change the whole journey. Keep going and see where it takes you.</p>
+    </section>
+  </main>
+  <script>
+    document.documentElement.classList.add("js-ready");
+    window.addEventListener("load", () => {
+      if (!window.gsap || !window.ScrollTrigger) {
+        document.documentElement.classList.remove("js-ready");
+        return;
+      }
+
+      gsap.registerPlugin(ScrollTrigger);
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const letters = gsap.utils.toArray(".headline span:not(.space)");
+      const metrics = gsap.utils.toArray(".metric");
+
+      if (!reduceMotion) {
+        gsap.timeline({ defaults: { ease: "power3.out" } })
+          .fromTo(letters, { y: 18, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, stagger: 0.035 })
+          .fromTo(".subhead", { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5 }, "-=0.34")
+          .fromTo(metrics, { y: 15, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, stagger: 0.09 }, "-=0.18");
+
+        gsap.fromTo(".car-wrap",
+          { x: 0, xPercent: -50, yPercent: -50, rotation: 90 },
+          {
+            x: () => window.innerWidth * 1.18,
+            xPercent: -50,
+            yPercent: -50,
+            rotation: 90,
+            ease: "none",
+            scrollTrigger: {
+              trigger: ".scroll-track",
+              start: "top top",
+              end: "bottom bottom",
+              scrub: 0.8,
+              invalidateOnRefresh: true
+            }
+          }
+        );
+      } else {
+        gsap.set([letters, ".subhead", metrics], { clearProps: "all" });
+        gsap.set(".car-wrap", { x: 0, yPercent: -50, rotation: 90 });
+      }
+    }, { once: true });
+  </script>
+</body>
+</html>
