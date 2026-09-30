@@ -4,17 +4,17 @@ A responsive, scroll-driven hero inspired by the supplied car animation referenc
 
 ## Run locally
 
-From the project folder:
+From this folder:
 
 ```powershell
-py -m http.server 8000 --directory scroll-hero
+py -m http.server 8000
 ```
 
 Open `http://localhost:8000` in a browser. The page also works as a static site without a build step.
 
 ## Publish with GitHub Pages
 
-This folder is ready to publish as the root of a repository. Create a repository on GitHub, put the contents of this folder at its root, push to the `main` branch, then choose **Settings > Pages > Deploy from a branch > main > /(root)**. GitHub Pages will show the live URL in the Pages settings.
+This project is published at [Siddharth-16-saxena/itz-fizz-scroll-hero](https://github.com/Siddharth-16-saxena/itz-fizz-scroll-hero). GitHub Actions deploys the repository root to GitHub Pages on every push to `main`.
 
 ## Credits
 
